@@ -1,0 +1,20 @@
+fastapi
+pydantic
+uvicorn
+
+python-dotenv
+
+pgvector #enable vector similarity search in Postgres - vector column support
+psycopg2-binary #postgres driver
+
+sqlalchemy #ORM
+
+sentence-transformers  #  Local Embeddings
+requests #For calling Cockpit API
+FlagEmbedding #optimized for Apple Silicon to automatically use Apple MPS GPU on Mac
+
+python-multipart #for file uploads in FastAPI
+
+python-jose #for JWT token handling
+passlib[bcrypt] #for password hashing
+jwt

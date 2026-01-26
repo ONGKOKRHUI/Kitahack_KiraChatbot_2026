@@ -1,0 +1,58 @@
+meeting-knowledge-automation/
+├── backend/                        # FastAPI Backend
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py                 # Application Entry Point
+│   │   ├── core/                   # Core Infrastructure
+│   │   │   ├── __init__.py
+│   │   │   ├── config.py           # Environment variables & Settings
+│   │   │   ├── database.py         # DB connection & SessionLocal
+│   │   │   └── security.py         # JWT Token & Password Hashing
+│   │   ├── api/                    # API Route Controllers
+│   │   │   ├── __init__.py
+│   │   │   └── v1/
+│   │   │       ├── __init__.py
+│   │   │       ├── ingestion.py    # Trigger, Webhook & Parsing endpoints
+│   │   │       ├── chat.py         # RAG & Q&A endpoints
+│   │   │       └── auth.py         # Login & User management
+│   │   ├── services/               # Business Logic Layer
+│   │   │   ├── __init__.py
+│   │   │   ├── parser.py           # (Phase 1) Cockpit Regex Parser
+│   │   │   ├── graph_connector.py  # MS Graph API interactions
+│   │   │   └── vector_store.py     # Embedding generation & Search
+│   │   ├── models/                 # Database Models (SQLAlchemy)
+│   │   │   ├── __init__.py
+│   │   │   └── knowledge.py        # Meeting & Chunk Tables
+│   │   └── schemas/                # Pydantic Data Validation
+│   │       ├── __init__.py
+│   │       └── payload.py          # Request/Response schemas
+│   ├── requirements.txt
+│   └── .env                        # Secrets (DB URL, API Keys)
+│
+├── database/                       # Database Infrastructure
+│   └── docker-compose.yml          # Postgres + pgvector configuration
+│
+├── frontend/                       # (Future Phase) Vue.js App
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── views/
+│   │   └── main.js
+│   └── package.json
+│
+└── README.md
+
+
+frontend/
+├── src/
+│   ├── assets/main.css         # Tailwind directives
+│   ├── components/
+│   │   ├── Sidebar.vue         # Project & History list. ///
+│   │   └── ChatWindow.vue      # (Optional) Separated chat component
+│   ├── router/index.js         # Routes
+│   ├── stores/auth.js          # Auth state (Pinia)
+│   ├── views/
+│   │   ├── LoginView.vue       # Login Page
+│   │   └── HomeView.vue        # Main Chat Interface
+│   ├── App.vue
+│   └── main.js

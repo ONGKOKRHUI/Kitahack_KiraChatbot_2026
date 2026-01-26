@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  # 1. Postgres database with pgvector extension
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: meeting_knowledge_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secure_password
+      POSTGRES_DB: knowledge_base
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Backend service
+  # backend:
+  #   build: ./backend
+  #   container_name: meeting_backend
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     DATABASE_URL: postgres://admin:secure_password@db:5432/knowledge_base
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - ./backend:/app
+
+  # # 3. Frontend service
+  # frontend:
+  #   build: ./frontend
+  #   container_name: meeting_frontend
+  #   ports:
+  #     - "5173:5173"
+  #   depends_on:
+  #     - backend
+  #   volumes:
+  #     - ./frontend:/app
+
+volumes:
+  postgres_data:
+
+
+# Use 'docker-compose up -d' to start the database service in detached mode.
+
+# It launches a container running Postgres
+
+# With pgvector already enabled
+
+# On port 5432
+
+# Username = admin
+
+# Password = secure_password
+
+# DB = knowledge_base
