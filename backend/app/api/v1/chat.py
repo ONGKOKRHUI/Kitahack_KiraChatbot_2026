@@ -16,6 +16,7 @@ import uuid
 from app.services.vector_store import VectorService  # Import for DB search
 from app.models.knowledge import Meeting, KnowledgeChunk  # For metadata
 from app.api.v1.auth import get_current_user
+from pydantic import BaseModel
 
 #router = APIRouter(prefix="/chat")
 router = APIRouter()
@@ -43,15 +44,34 @@ class MessageResponse(BaseModel):
 #Depends(get_db) is a dependency injection that provides a database session to the endpoint function.
 # current_user is obtained from the JWT token using the get_current_user dependency.
 def get_user_sessions(project_code: str = None, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    
+    # print(">>> DEBUG START <<<")
+    # print("Current User from JWT:", current_user)
+    # print("Filter Project Code:", project_code)
+    # all_sessions = db.query(ChatSession).all()
+    # print("All Sessions in DB:")
+    # for s in all_sessions:
+    #     print("  → id:", s.id, 
+    #           "user_id:", s.user_id, 
+    #           "project_code:", s.project_code,
+    #           "created_at:", s.created_at)
+    
+    print("\nApplying filters...")
     query = db.query(ChatSession).filter(ChatSession.user_id == current_user)
     if project_code:
         query = query.filter(ChatSession.project_code == project_code)
     sessions = query.order_by(ChatSession.created_at.desc()).all()
-    print(sessions)
-    for s in sessions:
-        print(s.project_code)
+    
+    # Show the filtered results
+    # print("Filtered Sessions:")
+    # for s in sessions:
+    #     print("  → id:", s.id, 
+    #           "user_id:", s.user_id, 
+    #           "project_code:", s.project_code,
+    #           "created_at:", s.created_at)
+    # print(">>> DEBUG END <<<")
+
     return [{"id": str(s.id), "title": s.title, "created_at": str(s.created_at)} for s in sessions]
-    #sessions = db.query(ChatSession).filter(ChatSession.user_id == current_user).order_by(ChatSession.created_at.desc()).all()
 
 # 2. Get Full History of a Specific Session
 @router.get("/chat/sessions/{session_id}/messages", response_model=List[MessageResponse])
@@ -64,12 +84,12 @@ def get_session_history(session_id: str, db: Session = Depends(get_db)):
 
 # 3. Create New Chat Session
 @router.post("/chat/sessions")
-def create_new_session(req: CreateSessionRequest, db: Session = Depends(get_db)):
+def create_new_session(req: CreateSessionRequest, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
     """
     Creates a new empty chat thread.
     """
     new_session = ChatSession(
-        user_id="current_user", # Replace with actual JWT user
+        user_id=current_user, # Replace with actual JWT user
         project_code=req.project_code,
         title=req.title
     )
@@ -124,6 +144,7 @@ def send_message(req: ChatMessageRequest, db: Session = Depends(get_db)):
     # We convert our payload dict to a JSON string because Cockpit takes a string input
     cockpit_input_str = json.dumps(full_prompt_payload)
     try:
+        # Step 1: Send to Workflow A
         query_json_str = CockpitRAG.run_workflow(cockpit_input_str, workflow_type="query")
         
         # Step 2: Parse JSON output from Workflow A
@@ -196,11 +217,15 @@ def send_message(req: ChatMessageRequest, db: Session = Depends(get_db)):
     # 5. Return AI Response to Frontend as JSON
     return {"role": "assistant", "content": ai_response_text}
 
+class UpdateSessionRequest(BaseModel):
+    title: str
+
 # 5. Update Session Title - PUT request to /chat/sessions/{session_id}
 @router.put("/chat/sessions/{session_id}")
-def update_session(session_id: str, title: str, db: Session = Depends(get_db)):
+def update_session(session_id: str, req: UpdateSessionRequest, db: Session = Depends(get_db)):
     session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
-    if session:
-        session.title = title
-        db.commit()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    session.title = req.title
+    db.commit()
     return {"status": "updated"}

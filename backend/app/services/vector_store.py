@@ -81,6 +81,10 @@ class VectorService:
             }
             for row in results
         ]
+        # Debug print
+        print("Query:", query)
+        print("SQL Query", sql_query)
+        print("Found chunks:", found_chunks)
         #json_chunks = [json.dumps(chunk) for chunk in found_chunks]
         return found_chunks
 

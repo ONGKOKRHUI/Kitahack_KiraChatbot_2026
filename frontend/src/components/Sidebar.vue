@@ -55,6 +55,7 @@ const fetchSessions = async () => {
 }
 
 // 2. Rename Session
+// sends a PUT request to the backend in JSON format
 const editingSession = ref(null)
 const renameSession = async (sessionId, newTitle) => {
   await axios.put(`${API_URL}/chat/sessions/${sessionId}`, { title: newTitle })
