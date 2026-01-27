@@ -15,7 +15,7 @@ from typing import List, Optional
 import uuid
 from app.services.vector_store import VectorService  # Import for DB search
 from app.models.knowledge import Meeting, KnowledgeChunk  # For metadata
-
+from app.api.v1.auth import get_current_user
 
 #router = APIRouter(prefix="/chat")
 router = APIRouter()
@@ -39,14 +39,19 @@ class MessageResponse(BaseModel):
 
 # --- Endpoints --- backend API endpoints for chat functionality
 # 1. Get Past Sessions for Sidebar
-@router.get("/chat/sessions", response_model=List[SessionResponse])
-def get_user_sessions(user_id: str = "current_user", db: Session = Depends(get_db)):
-    """
-    Returns list of past conversation threads for the Sidebar.
-    (In real auth, extract user_id from JWT)
-    """
-    sessions = db.query(ChatSession).filter(ChatSession.user_id == user_id).order_by(ChatSession.created_at.desc()).all()
+@router.get("/chat/sessions") # gets project_code from frontend 
+#Depends(get_db) is a dependency injection that provides a database session to the endpoint function.
+# current_user is obtained from the JWT token using the get_current_user dependency.
+def get_user_sessions(project_code: str = None, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    query = db.query(ChatSession).filter(ChatSession.user_id == current_user)
+    if project_code:
+        query = query.filter(ChatSession.project_code == project_code)
+    sessions = query.order_by(ChatSession.created_at.desc()).all()
+    print(sessions)
+    for s in sessions:
+        print(s.project_code)
     return [{"id": str(s.id), "title": s.title, "created_at": str(s.created_at)} for s in sessions]
+    #sessions = db.query(ChatSession).filter(ChatSession.user_id == current_user).order_by(ChatSession.created_at.desc()).all()
 
 # 2. Get Full History of a Specific Session
 @router.get("/chat/sessions/{session_id}/messages", response_model=List[MessageResponse])
@@ -191,3 +196,11 @@ def send_message(req: ChatMessageRequest, db: Session = Depends(get_db)):
     # 5. Return AI Response to Frontend as JSON
     return {"role": "assistant", "content": ai_response_text}
 
+# 5. Update Session Title - PUT request to /chat/sessions/{session_id}
+@router.put("/chat/sessions/{session_id}")
+def update_session(session_id: str, title: str, db: Session = Depends(get_db)):
+    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+    if session:
+        session.title = title
+        db.commit()
+    return {"status": "updated"}

@@ -5,6 +5,7 @@ import { useAuthStore } from '../stores/auth'; // We'll use the store we set up
 
 const router = useRouter();
 const authStore = useAuthStore();
+const projects = ref(authStore.user?.projects || [])
 
 const username = ref('');
 const password = ref('');

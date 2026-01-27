@@ -17,7 +17,7 @@ class ChatSession(Base):
     project_code = Column(String, index=True)    # e.g., "A100"
     title = Column(String)                       # e.g., "Bug investigation"
     created_at = Column(DateTime, default=datetime.utcnow)
-    # Relationship
+    # Relationship - a session can have many messages, cascade delete on session delete
     messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
 
 class ChatMessage(Base):
@@ -32,5 +32,5 @@ class ChatMessage(Base):
     role = Column(String)  # "user" or "assistant"
     content = Column(Text) # The actual text
     timestamp = Column(DateTime, default=datetime.utcnow)
-
+    # Relationship back to session - a message belongs to a session
     session = relationship("ChatSession", back_populates="messages")

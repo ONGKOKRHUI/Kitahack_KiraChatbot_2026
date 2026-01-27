@@ -2,12 +2,16 @@
 // /home → HomeView (chat UI)
 // The Traffic Controller. It decides: "URL is /? Load LoginView. URL is /chat? Load HomeView."
 //maps URLs to components
+// What it does: This sets up the navigation rules.
+// The Guard: The router.beforeEach block is the "Bouncer."
+// It checks every page navigation. If the page requires auth (meta: { requiresAuth: true }) 
+// and the user has no token in the store, it forces them to /login.
 
 // filepath: frontend/src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '../stores/auth' // Import the Pinia auth store
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

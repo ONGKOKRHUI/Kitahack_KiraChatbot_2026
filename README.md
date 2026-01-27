@@ -9,9 +9,9 @@ Navigate to the database folder: cd database
 Start Postgres with pgvector: docker-compose up -d
 Verify: docker ps (should show meeting_knowledge_db).
 Initialize tables: python ../backend/init_db.py (run from database or adjust path). You should see "Tables created successfully!"
-Optional: Inspect DB: docker exec -it meeting_knowledge_db psql -U admin -d knowledge_base → Run \dt to confirm tables.
+Optional: Inspect DB connect to db : docker exec -it meeting_knowledge_db psql -U admin -d knowledge_base → Run \dt to confirm tables.
 Set Up and Start the Backend (Phase 1/2):
-
+ 
 Navigate to backend: cd ../backend
 Install deps: pip install -r requirements.txt
 Start FastAPI: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000

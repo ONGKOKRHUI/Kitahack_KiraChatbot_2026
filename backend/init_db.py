@@ -7,6 +7,7 @@ from app.core.database import engine, Base
 # Import models to ensure SQLAlchemy is aware of these tables, because you imported them, they become part of Base.metadata
 from app.models.knowledge import Meeting, KnowledgeChunk
 from app.models.chat import ChatSession, ChatMessage
+from app.models.user import User
 from sqlalchemy import text
 
 def init_db():

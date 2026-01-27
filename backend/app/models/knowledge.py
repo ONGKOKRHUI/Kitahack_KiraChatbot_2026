@@ -26,7 +26,7 @@ class Meeting(Base):
     title = Column(String)
     meeting_date = Column(DateTime, default=datetime.utcnow)
     
-    # Relationships
+    # Relationships - one meeting has many knowledge chunks
     chunks = relationship("KnowledgeChunk", back_populates="meeting")
 
 class KnowledgeChunk(Base):
@@ -58,5 +58,5 @@ class KnowledgeChunk(Base):
     # vector column size reduced to 1024 to match local embedding model
     embedding = Column(Vector(1024))
 
-    # Relationships
+    # Relationships - many chunks belong to one meeting
     meeting = relationship("Meeting", back_populates="chunks")

@@ -76,7 +76,8 @@ async def process_meeting_webhook(payload: WebhookPayload, db: Session = Depends
         chunk_meta = section_data.get('metadata', {})
         
         for text_content in section_data.get('content', []):
-            if not text_content.strip():
+            # Skip empty chunks
+            if not text_content.strip() or len(text_content.strip()) < 30:
                 continue
             
             # GENERATE LOCAL EMBEDDING

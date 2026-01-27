@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1 import ingestion, search, chat # Import your route modules
+from app.api.v1 import ingestion, search, chat, auth # Import your route modules
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -17,6 +17,7 @@ app.add_middleware(
 
 # Register the routers
 # This makes the endpoints available at /api/v1/webhook/..., /api/v1/chat/..., etc.
+app.include_router(auth.router, prefix="/api/v1")
 app.include_router(ingestion.router, prefix="/api/v1")
 app.include_router(search.router, prefix="/api/v1") 
 app.include_router(chat.router, prefix="/api/v1") # (We will build this next)

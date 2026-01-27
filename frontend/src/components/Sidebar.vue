@@ -10,7 +10,8 @@ const props = defineProps(['currentSessionId']);
 const emit = defineEmits(['select-session']);
 
 // Data State
-const projects = ref([]);          // Replaces mock data
+// ref makes the variable reactive so the UI updates when it changes
+const projects = ref([]);  
 const selectedProject = ref('');
 const sessions = ref([]);
 const loading = ref(true);
@@ -19,6 +20,7 @@ const loading = ref(true);
 const API_URL = 'http://localhost:8000/api/v1';
 
 // 1. Fetch Projects & Sessions on Load
+// Using onMounted lifecycle hook to run code when component is mounted - fetch initial history list
 onMounted(async () => {
   try {
     // A. Fetch available projects (You might need to add a small API endpoint for this or hardcode for now)
@@ -38,14 +40,28 @@ onMounted(async () => {
 // Function to get history from backend
 const fetchSessions = async () => {
   try {
-    // CALLING YOUR PYTHON BACKEND HERE
-    const res = await axios.get(`${API_URL}/chat/sessions`);
-    sessions.value = res.data;
+    const projectCode = selectedProject.value.split(' ')[0];
+    // const res = await axios.get(`${API_URL}/chat/sessions`);
+    const res = await axios.get(`${API_URL}/chat/sessions?project_code=${projectCode}`);
+    sessions.value = res.data
   } catch (e) {
-    console.error("Failed to load sessions");
+    if (e.response?.status === 401) {
+      // Redirect to login on auth failure
+      router.push('/login')
+    } else {
+      console.error("Failed to load sessions:", e)
+    }
   }
-};
+}
 
+// 2. Rename Session
+const editingSession = ref(null)
+const renameSession = async (sessionId, newTitle) => {
+  await axios.put(`${API_URL}/chat/sessions/${sessionId}`, { title: newTitle })
+  await fetchSessions()
+}
+
+// 3. Create New Chat Session
 const createNewChat = async () => {
   try {
     // Parse the project code (e.g., "A100" from "A100 - Chatbot")
@@ -64,6 +80,7 @@ const createNewChat = async () => {
     console.error(e);
   }
 };
+
 </script>
 
 <template>
@@ -71,6 +88,8 @@ const createNewChat = async () => {
     
     <div class="p-4">
       <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Project</h2>
+      <!-- v-model binds the selected option to the selectedProject variable -->
+       <!-- this will update the selectedProject variable when the user selects an option -->
       <select v-model="selectedProject" class="w-full bg-gray-800 text-white rounded p-2 border border-gray-700 focus:outline-none focus:border-blue-500">
         <option v-for="p in projects" :key="p">{{ p }}</option>
       </select>
@@ -87,12 +106,20 @@ const createNewChat = async () => {
       <div v-else>
         <div class="px-2 mb-2 text-xs font-semibold text-gray-500 uppercase">History</div>
         
-        <div v-for="session in sessions" :key="session.id" 
-             @click="$emit('select-session', session.id)"
-             :class="['flex items-center px-3 py-3 rounded cursor-pointer mb-1 transition-colors', 
+        <div v-for="session in sessions" :key="session.id"
+            @click="$emit('select-session', session.id)"
+            @dblclick.stop="editingSession = session.id"
+            :class="['flex items-center px-3 py-3 rounded cursor-pointer mb-1 transition-colors', 
                       session.id === currentSessionId ? 'bg-gray-800 text-white shadow-sm' : 'hover:bg-gray-800 text-gray-400']">
           <ChatBubbleLeftIcon class="w-4 h-4 mr-3 flex-shrink-0" />
-          <span class="text-sm truncate">{{ session.title }}</span>
+
+          <input v-if="editingSession === session.id" 
+                v-model="session.title" 
+                @blur="renameSession(session.id, session.title); editingSession = null" 
+                @keyup.enter="renameSession(session.id, session.title); editingSession = null"
+                class="flex-1 bg-gray-800 text-white rounded px-2 py-1 focus:outline-none" />
+
+          <span v-else class="text-sm truncate">{{ session.title }}</span>
         </div>
       </div>
     </div>
