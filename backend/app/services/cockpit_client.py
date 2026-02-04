@@ -2,6 +2,7 @@
 Cockpit Client Service
 This module provides functionality to interact with the Cockpit API
 for processing meeting data.
+triggered by Graph API 
 """
 
 import requests
