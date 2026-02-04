@@ -51,7 +51,7 @@ def login(form_data: LoginRequest, db: Session = Depends(get_db)):
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
-# This tells FastAPI that the token comes from the /token endpoint
+# tells FastAPI token comes from the /token endpoint
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
