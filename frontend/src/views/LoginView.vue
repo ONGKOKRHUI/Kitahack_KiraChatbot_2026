@@ -17,7 +17,7 @@ const handleLogin = async () => {
   isLoading.value = true;
 
   try {
-    // 1. Call the Login Action from our Store
+    // 1. Call the Login Action from Store
     // This abstracts the logic (e.g., saving the token) away from the view
     const success = await authStore.login(username.value, password.value);
 

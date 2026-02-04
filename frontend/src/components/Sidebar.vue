@@ -19,16 +19,16 @@ const loading = ref(true);
 // API Configuration
 const API_URL = 'http://localhost:8000/api/v1';
 
-// 1. Fetch Projects & Sessions on Load
+// fetch Projects & Sessions on Load
 // Using onMounted lifecycle hook to run code when component is mounted - fetch initial history list
 onMounted(async () => {
   try {
-    // A. Fetch available projects (You might need to add a small API endpoint for this or hardcode for now)
-    // For now, let's assume we fetch them or just define them if they are static
+    // fetch available projects (might need to add a small API endpoint for this or hardcode for now)
+    // For now, assume we fetch them or just define them if they are static
     projects.value = ['A100 - Chatbot', 'B200 - Analytics']; 
     selectedProject.value = projects.value[0];
 
-    // B. Fetch Chat History from Backend
+    // fetch Chat History from Backend
     await fetchSessions();
   } catch (e) {
     console.error("Backend connection failed:", e);

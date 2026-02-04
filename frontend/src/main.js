@@ -20,10 +20,25 @@ app.use(pinia)
 app.use(router)
 
 // Check auth and redirect if needed BEFORE mounting
+// const authStore = useAuthStore()
+// if (!authStore.token) {
+//   router.push('/login')  // Force redirect to login if no token
+// }
+
 const authStore = useAuthStore()
-if (!authStore.token) {
-  router.push('/login')  // Force redirect to login if no token
-}
+
+// Add a response interceptor to handle 401 errors globally
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // If the backend says "Unauthorized", clear the token and redirect to login
+      authStore.logout()
+      router.push('/login')
+    }
+    return Promise.reject(error)
+  }
+)
 
 // Set axios default Authorization header if token exists in localStorage
 const token = localStorage.getItem('token')
