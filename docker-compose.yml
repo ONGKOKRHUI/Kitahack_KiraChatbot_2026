@@ -13,60 +13,39 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-# connect to this db command:  docker exec -it meeting_knowledge_db psql -U admin -d knowledge_base
-#### DROP ALL TABLES COMMAND #####
-# DO
-# $$
-# DECLARE
-#     r RECORD;
-# BEGIN
-#     -- Loop through all tables in the public schema
-#     FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
-#         EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
-#     END LOOP;
-# END
-# $$;
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d knowledge_base"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # 2. Backend service
-  # backend:
-  #   build: ./backend
-  #   container_name: meeting_backend
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     DATABASE_URL: postgres://admin:secure_password@db:5432/knowledge_base
-  #   depends_on:
-  #     - db
-  #   volumes:
-  #     - ./backend:/app
+  backend:
+    build: ./backend
+    container_name: meeting_backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://admin:secure_password@db:5432/knowledge_base
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    # Run init_db.py to create tables/extensions, then start server with hot reload
+    command: sh -c "python init_db.py && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
-  # # 3. Frontend service
-  # frontend:
-  #   build: ./frontend
-  #   container_name: meeting_frontend
-  #   ports:
-  #     - "5173:5173"
-  #   depends_on:
-  #     - backend
-  #   volumes:
-  #     - ./frontend:/app
+  # 3. Frontend service
+  frontend:
+    build: ./frontend
+    container_name: meeting_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
 volumes:
   postgres_data:
-
-
-# Use 'docker-compose up -d' to start the database service in detached mode.
-
-# It launches a container running Postgres
-
-# With pgvector already enabled
-
-# On port 5432
-
-# Username = admin
-
-# Password = secure_password
-
-# DB = knowledge_base
